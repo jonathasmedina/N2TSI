@@ -51,7 +51,7 @@ public class UsuarioLogado extends AppCompatActivity {
         searchView = findViewById(R.id.searchView1);
 
         firebaseDatabase = FirebaseDatabase.getInstance();
-        firebaseDatabase.setPersistenceEnabled(true);
+//        firebaseDatabase.setPersistenceEnabled(true);
         databaseReference = firebaseDatabase.getReference();
 
 

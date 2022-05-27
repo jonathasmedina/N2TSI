@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -25,8 +27,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
 
-    public RecyclerAdapter(ArrayList<Filme> filmeArrayListLocal) {
-        this.filmeArrayListLocal = filmeArrayListLocal;
+    public RecyclerAdapter(ArrayList<Filme> filmeArrayListLocal_) {
+        this.filmeArrayListLocal = filmeArrayListLocal_;
     }
 
     @NonNull
@@ -85,9 +87,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         }
 
         private void inserirEm(int layoutPosition) {
-            databaseReference.child("Filmes").
-                    child(filmeArrayListLocal.get(layoutPosition).getTitulo()).
-                    setValue(filmeArrayListLocal.get(layoutPosition));
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+            Filme f = filmeArrayListLocal.get(layoutPosition);
+
+            databaseReference.child(user.getUid()).
+                    child("Filmes").
+                    child(f.getTitulo()).
+                    setValue(f);
         }
 
         private void removeAt(int layoutPosition) {
@@ -97,5 +104,23 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         }
     }
 
+    public void filtrar(String text) {
+        ArrayList<Filme> filmeArrayListCopia = new ArrayList<>(filmeArrayListLocal);
 
+        //limpando array da lista
+        filmeArrayListLocal.clear();
+
+        if(text.isEmpty()) {
+            filmeArrayListLocal.addAll(filmeArrayListCopia);
+        }
+        else{
+            text = text.toLowerCase();
+            for(Filme item: filmeArrayListCopia){
+                if(item.getTitulo().toLowerCase().contains(text) || item.getAno().toLowerCase().contains(text)){
+                    filmeArrayListLocal.add(item);
+                }
+            }
+        }
+        notifyDataSetChanged();
+        }
 }

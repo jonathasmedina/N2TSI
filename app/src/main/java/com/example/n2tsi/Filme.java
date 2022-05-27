@@ -1,15 +1,14 @@
 package com.example.n2tsi;
 
 public class Filme {
-    String titulo, ano, descricao, urlImg;
+    String titulo, ano, urlImg;
 
     public Filme() {
     }
 
-    public Filme(String titulo, String ano, String descricao, String urlImg) {
+    public Filme(String titulo, String ano, String urlImg) {
         this.titulo = titulo;
         this.ano = ano;
-        this.descricao = descricao;
         this.urlImg = urlImg;
     }
 
@@ -27,14 +26,6 @@ public class Filme {
 
     public void setAno(String ano) {
         this.ano = ano;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
     }
 
     public String getUrlImg() {
