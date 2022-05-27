@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONException;
 
@@ -27,9 +31,14 @@ public class UsuarioLogado extends AppCompatActivity {
 
     EditText edBuscar;
     Button btlogout;
+    TextView textViewFav;
+    SearchView searchView;
     RecyclerView recyclerView;
     ArrayList<Filme> filmeArrayList = new ArrayList<>();
     String busca = "";
+
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
 
 
     @Override
@@ -37,39 +46,54 @@ public class UsuarioLogado extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_usuario_logado);
 
-        btlogout = findViewById(R.id.buttonLogout);
         recyclerView = findViewById(R.id.recyclerView);
-        edBuscar = findViewById(R.id.edBusca);
+        textViewFav = findViewById(R.id.textViewFav);
+        searchView = findViewById(R.id.searchView1);
+
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        firebaseDatabase.setPersistenceEnabled(true);
+        databaseReference = firebaseDatabase.getReference();
 
 
-        setInfo();
-
-        setRecyclerView();
-
-        btlogout.setOnClickListener(new View.OnClickListener() {
+        textViewFav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FirebaseAuth.getInstance().signOut();
-
-                Toast.makeText(UsuarioLogado.this, "Logout", Toast.LENGTH_LONG).show();
-
-                startActivity(new Intent(UsuarioLogado.this, MainActivity.class));
+                Intent i = new Intent(UsuarioLogado.this, UsuarioFavoritos.class);
+                startActivity(i);
             }
         });
 
+        //searchView aberto
+        searchView.setIconified(false);
+        searchView.clearFocus();
+
+        setInfo("movie");
+        setRecyclerView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                searchView.clearFocus(); //fecha teclado
+                setInfo(s);
+                setRecyclerView();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
     }
 
-    private void setInfo() {
-                if(edBuscar.getText().toString().equals("")){
-                    busca = "movie";
-                }
-                else
-                    busca = edBuscar.getText().toString();
+    private void setInfo(String busca) {
 
-                String url = "https://www.omdbapi.com/?s=" + busca + "&apikey=fce85cc5";
-                DownloadDados dados = (DownloadDados) new DownloadDados().execute(url);
+        filmeArrayList.clear();
 
-                filmeArrayList = dados.getFilmeArrayList();
+        String url = "https://www.omdbapi.com/?s=" + busca + "&apikey=fce85cc5";
+        DownloadDados dados = (DownloadDados) new DownloadDados().execute(url);
+
+        filmeArrayList = dados.getFilmeArrayList();
     }
 
     private void setRecyclerView() {
@@ -79,7 +103,6 @@ public class UsuarioLogado extends AppCompatActivity {
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(recyclerAdapter);
-
     }
 
 }

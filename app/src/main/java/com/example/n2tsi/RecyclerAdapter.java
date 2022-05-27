@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -19,6 +21,9 @@ import java.util.ArrayList;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyViewHolder> {
 
     ArrayList<Filme> filmeArrayListLocal = new ArrayList<>();
+
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
 
     public RecyclerAdapter(ArrayList<Filme> filmeArrayListLocal) {
         this.filmeArrayListLocal = filmeArrayListLocal;
@@ -64,13 +69,25 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
 
             mImageView = itemView.findViewById(R.id.imageView);
 
-//            itemView.setOnClickListener(this);
+            firebaseDatabase = FirebaseDatabase.getInstance();
+//            firebaseDatabase.setPersistenceEnabled(true);
+            databaseReference = firebaseDatabase.getReference();
+
+
+            itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
-            Toast.makeText(view.getContext(), "posição= " + getLayoutPosition(), Toast.LENGTH_SHORT).show();
-            removeAt(getLayoutPosition());
+            //removeAt(getLayoutPosition());
+            inserirEm(getLayoutPosition());
+            Toast.makeText(view.getContext(), "Título salvo nos favoritos.", Toast.LENGTH_SHORT).show();
+        }
+
+        private void inserirEm(int layoutPosition) {
+            databaseReference.child("Filmes").
+                    child(filmeArrayListLocal.get(layoutPosition).getTitulo()).
+                    setValue(filmeArrayListLocal.get(layoutPosition));
         }
 
         private void removeAt(int layoutPosition) {
@@ -79,4 +96,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
             notifyItemRangeChanged(layoutPosition, filmeArrayListLocal.size());
         }
     }
-    }
+
+
+}

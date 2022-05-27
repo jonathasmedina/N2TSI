@@ -23,9 +23,6 @@ public class DownloadDados extends AsyncTask<String, Void, ArrayList<Filme>> {
         return filmeArrayList;
     }
 
-
-    ProgressDialog dialog;
-
     @Override
     protected ArrayList<Filme> doInBackground(String... strings) {
         String urlString = strings[0];
