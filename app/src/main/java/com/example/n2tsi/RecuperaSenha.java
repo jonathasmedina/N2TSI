@@ -41,6 +41,7 @@ public class RecuperaSenha extends AppCompatActivity {
                     return;
                 }
 
+                //envia e-mail para recuperação de senha
                 mAuthRec.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {

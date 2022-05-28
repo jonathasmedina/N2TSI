@@ -9,9 +9,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,9 +23,13 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+//Esta tela faz uma consulta ao Firebase, que retorna uma coleção de Filmes adicionados aos favoritos
+//que são representados também em um RecyclerView
+//O recyclerAdapter utilizado é o mesmo da tela de consulta na API.
+
+//funciona e é composta de maneira similar à tela de consulta à API (UsuarioLogado),
+//contudo com dados vindos do Firebase
 public class UsuarioFavoritos extends AppCompatActivity {
 
     TextView textViewLogout;
@@ -52,13 +53,13 @@ public class UsuarioFavoritos extends AppCompatActivity {
 
         //searchView aberto
         searchView.setIconified(false);
+        //retira o foco automático e fecha o teclado ao iniciar a aplicação
         searchView.clearFocus();
 
         firebaseDatabase = FirebaseDatabase.getInstance();
-//        firebaseDatabase.setPersistenceEnabled(true);
         databaseReference = firebaseDatabase.getReference();
 
-        //logout
+        //botão para efetuar logout
         textViewLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -70,51 +71,65 @@ public class UsuarioFavoritos extends AppCompatActivity {
             }
         });
 
-
+        //método para consultar o Firebase e popular o arraylist com os dados
         setInfo();
 
-        //todo backspace = refazer a lista;
-
+        //novamente, após a primeira exibição (acima), o usuário pode
+        //fazer uma consulta de um termo entre os filmes favoritos salvos
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String s) {
+                //método filtrar() definido na classe RecyclerAdapter,
+                //parâmetro = o que foi digitado na busca
+                //diferente da abordagem da tela UsuarioLogado pois
+                //os dados já estão salvos e o array populado, não é necessária nova requisição ou
+                //nova busca no banco ou nova url
                 recyclerAdapter.filtrar(s);
+                //notifica o adapter para alterações na lista
                 recyclerAdapter.notifyDataSetChanged();
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
+                //igual acima, para digitação sem submit
                 recyclerAdapter.filtrar(s);
+                //notifica o adapter para alterações na lista
                 recyclerAdapter.notifyDataSetChanged();
                 return true;
             }
-
         });
     }
 
     private void setInfo() {
         Query query;
 
+        //usuário logado no momento
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+        //limpando o array para a consulta
         filmeArrayListFavoritos.clear();
 
+        //o caminho da query no Firebase (todos os filmes)
         query = databaseReference.child(user.getUid()).child("Filmes");
 
+        //execução da query. Caso haja dados, cai no método onDataChange
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //if para aguardar pelo retorno do Firebase, que é assíncrono
+                //este método é assíncrono, se não houver validação dos dados,
+                //a lista será montada incorretamente pois não aguarda a consulta
+                //assim, o if seguinte é necessário:
                 if (dataSnapshot != null) {
                     for (DataSnapshot objDataSnapshot1 : dataSnapshot.getChildren()) {
                         Filme f = objDataSnapshot1.getValue(Filme.class);
                         Log.e("dentro do laço", "dentro");
                         filmeArrayListFavoritos.add(f);
                     }
-                    //tem que ser chamado dentro e ao final de onDataChange,
-                    //para o await do download dos dados
+                    //setRecyclerView() para montagem e configuração da RecyclerView mas
+                    //neste caso, setRecyclerView() tem que ser chamado aqui (dentro e ao final de onDataChange),
+                    //de forma que é executado somente após os dados acima serem baixados do Firebase
                     setRecyclerView();
                 }
             }

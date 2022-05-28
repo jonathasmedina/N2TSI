@@ -19,7 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     EditText edEmail, edSenha;
     TextView tvRecSenha, tvCriaUsuario;
     Button btLogar;
@@ -29,18 +29,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Intent i;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        edEmail  = findViewById(R.id.editTextEmail);
-        edSenha  = findViewById(R.id.editTextSenha);
-        tvCriaUsuario  = findViewById(R.id.textViewCriaUsuario);
-        tvRecSenha  = findViewById(R.id.textViewEsqueciSenha);
-        btLogar  = findViewById(R.id.buttonLogin);
-        progressBar  = findViewById(R.id.progressBar);
+        edEmail = findViewById(R.id.editTextEmail);
+        edSenha = findViewById(R.id.editTextSenha);
+        tvCriaUsuario = findViewById(R.id.textViewCriaUsuario);
+        tvRecSenha = findViewById(R.id.textViewEsqueciSenha);
+        btLogar = findViewById(R.id.buttonLogin);
+        progressBar = findViewById(R.id.progressBar);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -48,12 +47,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvRecSenha.setOnClickListener(this);
         btLogar.setOnClickListener(this);
 
+        //barra de progresso
         progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.buttonLogin:
                 logar();
                 break;
@@ -72,43 +72,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String email = edEmail.getText().toString();
         String senha = edSenha.getText().toString();
 
-        if(email.equals("") || !Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+        if (email.equals("") || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             edEmail.setError("Preencha corretamente");
             edEmail.requestFocus();
             return;
         }
 
-        if(senha.equals("")){
+        if (senha.equals("")) {
             edSenha.setError("Preencha corretamente");
             edSenha.requestFocus();
             return;
         }
 
         progressBar.setVisibility(View.VISIBLE);
+        //autenticando no firebase com usuário e senha do formulário:
         mAuth.signInWithEmailAndPassword(email, senha).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
 
+                    //comentários: validar cadastro com link - desativado
                     //verificar cadastro via email (link para clicar e ativar cadastro)
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                  //  if(user.isEmailVerified()){
-                        //se já verificou via email, redireciona login
-                        i = new Intent(MainActivity.this, UsuarioLogado.class);
-                        startActivity(i);
-                  //  }
-                  //  else {
-                   //     Toast.makeText(MainActivity.this, "Verifique conta via email.", Toast.LENGTH_LONG).show();
-                   //     user.sendEmailVerification();
-                 //   }
-                }
-                else //login falhou
+                    //  FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    //  if(user.isEmailVerified()){
+                    //se já verificou via email, redireciona login
+
+                    //tudo ok = muda para a tela de listem com as informações vindas da API
+                    i = new Intent(MainActivity.this, UsuarioLogado.class);
+                    startActivity(i);
+                    //  }
+                    //  else {
+                    //     Toast.makeText(MainActivity.this, "Verifique conta via email.", Toast.LENGTH_LONG).show();
+                    //     user.sendEmailVerification();
+                    //   }
+                } else //login falhou
                     Toast.makeText(MainActivity.this, "Erro ao logar", Toast.LENGTH_LONG).show();
 
                 progressBar.setVisibility(View.GONE);
             }
         });
-
-
     }
 }

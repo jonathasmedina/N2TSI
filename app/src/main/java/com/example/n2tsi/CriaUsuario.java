@@ -64,6 +64,7 @@ public class CriaUsuario extends AppCompatActivity {
             return;
         }
 
+        //cria usuário no Firebase com e-mail e senha informados no formulário
         mAuthCria.createUserWithEmailAndPassword(email, senha).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
