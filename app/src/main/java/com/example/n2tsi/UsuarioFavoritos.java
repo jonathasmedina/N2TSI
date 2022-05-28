@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,6 +26,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UsuarioFavoritos extends AppCompatActivity {
 
@@ -69,7 +72,6 @@ public class UsuarioFavoritos extends AppCompatActivity {
 
 
         setInfo();
-        setRecyclerView();
 
         //todo backspace = refazer a lista;
 
@@ -78,13 +80,14 @@ public class UsuarioFavoritos extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 recyclerAdapter.filtrar(s);
+                recyclerAdapter.notifyDataSetChanged();
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
-//                searchView.clearFocus(); //fecha teclado
                 recyclerAdapter.filtrar(s);
+                recyclerAdapter.notifyDataSetChanged();
                 return true;
             }
 
@@ -99,12 +102,20 @@ public class UsuarioFavoritos extends AppCompatActivity {
         filmeArrayListFavoritos.clear();
 
         query = databaseReference.child(user.getUid()).child("Filmes");
+
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot objDataSnapshot1 : dataSnapshot.getChildren()) {
-                    Filme f = objDataSnapshot1.getValue(Filme.class);
-                    filmeArrayListFavoritos.add(f);
+                //if para aguardar pelo retorno do Firebase, que é assíncrono
+                if (dataSnapshot != null) {
+                    for (DataSnapshot objDataSnapshot1 : dataSnapshot.getChildren()) {
+                        Filme f = objDataSnapshot1.getValue(Filme.class);
+                        Log.e("dentro do laço", "dentro");
+                        filmeArrayListFavoritos.add(f);
+                    }
+                    //tem que ser chamado dentro e ao final de onDataChange,
+                    //para o await do download dos dados
+                    setRecyclerView();
                 }
             }
 
@@ -122,7 +133,5 @@ public class UsuarioFavoritos extends AppCompatActivity {
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(recyclerAdapter);
-
-        //todo no adapter, implementar swipe nesta dela - excluir dos favoritos
     }
 }

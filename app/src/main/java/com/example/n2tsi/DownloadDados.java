@@ -2,6 +2,7 @@ package com.example.n2tsi;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,8 +20,10 @@ public class DownloadDados extends AsyncTask<String, Void, ArrayList<Filme>> {
 
     public ArrayList<Filme> filmeArrayList = new ArrayList<>();
 
-    public ArrayList<Filme> getFilmeArrayList() {
-        return filmeArrayList;
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        Log.e("onPreExecute:", "...Download das informações");
     }
 
     @Override
@@ -76,5 +79,14 @@ public class DownloadDados extends AsyncTask<String, Void, ArrayList<Filme>> {
         }
         return filmeArrayList;
     }
+
+
+    @Override
+    protected void onPostExecute(ArrayList<Filme> filmes) {
+        super.onPostExecute(filmes);
+    }
+
+
+
 
 }

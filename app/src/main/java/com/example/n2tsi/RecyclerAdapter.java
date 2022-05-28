@@ -1,6 +1,9 @@
 package com.example.n2tsi;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -23,18 +27,21 @@ import java.util.ArrayList;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyViewHolder> {
 
     ArrayList<Filme> filmeArrayListLocal = new ArrayList<>();
+    ArrayList<Filme> filmeArrayListCopia;
+
 
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
 
     public RecyclerAdapter(ArrayList<Filme> filmeArrayListLocal_) {
         this.filmeArrayListLocal = filmeArrayListLocal_;
+        filmeArrayListCopia = new ArrayList<>(filmeArrayListLocal);
     }
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_items, parent,false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_items, parent, false);
         return new MyViewHolder(itemView);
     }
 
@@ -58,7 +65,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         return filmeArrayListLocal.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView mTextViewTit;
         TextView mTextViewAno;
@@ -81,9 +88,41 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
 
         @Override
         public void onClick(View view) {
-            //removeAt(getLayoutPosition());
-            inserirEm(getLayoutPosition());
-            Toast.makeText(view.getContext(), "Título salvo nos favoritos.", Toast.LENGTH_SHORT).show();
+
+            //onClick tem dois comportamentos:
+            //se tela de listagem da API: confirmação + salvar nos favoritos
+            //se tela dos favoritos: confirmação + para exclusão
+
+            //estou na tela UsuarioLogado (listagem da API)
+            if (view.getContext().toString().contains("UsuarioLogado")) {
+                new AlertDialog.Builder(view.getContext())
+                        .setTitle("Salvar filme")
+                        .setMessage("Confirma salvar nos favoritos?")
+                        .setIcon(R.drawable.ic_baseline_favorite_border_24)
+                        .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                            //click no botão de ok, salvar no Firebase, método "inserirEm"
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                Toast.makeText(view.getContext(), "Título salvo nos favoritos.", Toast.LENGTH_SHORT).show();
+                                inserirEm(getLayoutPosition());
+                            }
+                        })
+                        .setNegativeButton("Não", null).show();
+            }
+            //estou na tela de favoritos, remover
+            else {
+                new AlertDialog.Builder(view.getContext())
+                        .setTitle("Remover")
+                        .setMessage("Confirma remover dos favoritos?")
+                        .setIcon(R.drawable.ic_baseline_delete_outline_24)
+                        .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                            //click no botão de ok, salvar no Firebase, método "inserirEm"
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                Toast.makeText(view.getContext(), "Título removido dos favoritos.", Toast.LENGTH_SHORT).show();
+                                removeAt(getLayoutPosition());
+                            }
+                        })
+                        .setNegativeButton("Não", null).show();
+            }
         }
 
         private void inserirEm(int layoutPosition) {
@@ -98,6 +137,16 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
         }
 
         private void removeAt(int layoutPosition) {
+
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+            Filme f = filmeArrayListLocal.get(layoutPosition);
+
+            databaseReference.child(user.getUid()).
+                    child("Filmes").
+                    child(f.getTitulo()).
+                    removeValue();
+
             filmeArrayListLocal.remove(layoutPosition);
             notifyItemRemoved(layoutPosition);
             notifyItemRangeChanged(layoutPosition, filmeArrayListLocal.size());
@@ -105,22 +154,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
     }
 
     public void filtrar(String text) {
-        ArrayList<Filme> filmeArrayListCopia = new ArrayList<>(filmeArrayListLocal);
 
-        //limpando array da lista
+        //limpando array da lista ao buscar algum termo na searchView
         filmeArrayListLocal.clear();
 
-        if(text.isEmpty()) {
+        if (text.isEmpty()) {
             filmeArrayListLocal.addAll(filmeArrayListCopia);
-        }
-        else{
+        } else {
             text = text.toLowerCase();
-            for(Filme item: filmeArrayListCopia){
-                if(item.getTitulo().toLowerCase().contains(text) || item.getAno().toLowerCase().contains(text)){
+            for (Filme item : filmeArrayListCopia) {
+                if (item.getTitulo().toLowerCase().contains(text) || item.getAno().toLowerCase().contains(text)) {
                     filmeArrayListLocal.add(item);
                 }
             }
         }
-        notifyDataSetChanged();
-        }
+    }
 }
