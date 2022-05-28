@@ -31,7 +31,6 @@ public class DownloadDados extends AsyncTask<String, Void, ArrayList<Filme>> {
         super.onPreExecute();
         Log.e("onPreExecute:", "...Download das informações");
     }
-
     //segundo método a ser executado
     //recebe a url, conecta, recebe o texto e faz o parse para o arraylist
     //o retorno deste método, que é o arraylistpopulado vai

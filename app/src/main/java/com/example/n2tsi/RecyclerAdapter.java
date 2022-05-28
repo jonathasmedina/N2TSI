@@ -18,8 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -109,6 +113,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 Toast.makeText(view.getContext(), "Título salvo nos favoritos.", Toast.LENGTH_SHORT).show();
                                 inserirEm(getLayoutPosition());
+
                             }
                         })
                         .setNegativeButton("Não", null).show();
@@ -130,6 +135,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
             }
         }
 
+
         //inserção no Firebase - filmes favoritos do usuário
         private void inserirEm(int layoutPosition) {
             //id do usuário logado no momento
@@ -146,21 +152,23 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
                     child("Filmes").
                     child(f.getTitulo()).
                     setValue(f);
+            //todo firebase não aceita no caminho, substituir  '.', '#', '$', '[', e ']'
+            //erro ao tentar salvar título de filme com os caracteres acima
         }
 
         //remover no Firebase - filmes favoritos do usuário
         private void removerEm(int layoutPosition) {
-
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+
             Filme f = filmeArrayListLocal.get(layoutPosition);
+
 
             databaseReference.child(user.getUid()).
                     child("Filmes").
                     child(f.getTitulo()).
                     removeValue();
 
-            //neste caso é necessário atualizar a visualização da lista, pois estamos na mesma tela
             filmeArrayListLocal.remove(layoutPosition);
             notifyItemRemoved(layoutPosition);
             notifyItemRangeChanged(layoutPosition, filmeArrayListLocal.size());

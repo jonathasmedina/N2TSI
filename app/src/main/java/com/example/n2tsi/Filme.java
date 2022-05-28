@@ -35,4 +35,5 @@ public class Filme {
     public void setUrlImg(String urlImg) {
         this.urlImg = urlImg;
     }
+
 }

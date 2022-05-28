@@ -124,7 +124,6 @@ public class UsuarioFavoritos extends AppCompatActivity {
                 if (dataSnapshot != null) {
                     for (DataSnapshot objDataSnapshot1 : dataSnapshot.getChildren()) {
                         Filme f = objDataSnapshot1.getValue(Filme.class);
-                        Log.e("dentro do laço", "dentro");
                         filmeArrayListFavoritos.add(f);
                     }
                     //setRecyclerView() para montagem e configuração da RecyclerView mas
