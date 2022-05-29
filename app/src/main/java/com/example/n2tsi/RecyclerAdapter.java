@@ -48,6 +48,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         //ViewHolder com XML do formato dos itens da lista...
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_items, parent, false);
+
         return new MyViewHolder(itemView);
     }
 
@@ -75,6 +76,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
     //class ViewHolder de conexão com os elementos da tela e config do Firebase Realtime Database
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+
         TextView mTextViewTit;
         TextView mTextViewAno;
         ImageView mImageView;
@@ -95,7 +97,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
 
         @Override
         public void onClick(View view) {
-
             //onClick no item da RecyclerView
             //tem dois comportamentos:
             //1 - se estivermos na tela de listagem da API: confirmação + salvar nos favoritos
@@ -135,7 +136,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
             }
         }
 
-
         //inserção no Firebase - filmes favoritos do usuário
         private void inserirEm(int layoutPosition) {
             //id do usuário logado no momento
@@ -156,23 +156,21 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
             //erro ao tentar salvar título de filme com os caracteres acima
         }
 
-        //remover no Firebase - filmes favoritos do usuário
-        private void removerEm(int layoutPosition) {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    }
 
+    //remover no Firebase - filmes favoritos do usuário
+    public void removerEm(int layoutPosition) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-            Filme f = filmeArrayListLocal.get(layoutPosition);
+        Filme f = filmeArrayListLocal.get(layoutPosition);
 
+        //limpa o array para correta renderização da lista
+        //após remoção, array será remontado com os valores restantes do firebase
+        filmeArrayListLocal.clear();
 
-            databaseReference.child(user.getUid()).
-                    child("Filmes").
-                    child(f.getTitulo()).
-                    removeValue();
-
-            filmeArrayListLocal.remove(layoutPosition);
-            notifyItemRemoved(layoutPosition);
-            notifyItemRangeChanged(layoutPosition, filmeArrayListLocal.size());
-        }
+        databaseReference.child(user.getUid()).child("Filmes").
+                child(f.getTitulo()).
+                removeValue();
     }
 
     public void filtrar(String text) {
