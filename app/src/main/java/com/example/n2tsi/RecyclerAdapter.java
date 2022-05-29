@@ -164,6 +164,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.MyView
 
         Filme f = filmeArrayListLocal.get(layoutPosition);
 
+        //importante: sem esta linha o array não é atualizado corretamente
         //limpa o array para correta renderização da lista
         //após remoção, array será remontado com os valores restantes do firebase
         filmeArrayListLocal.clear();
